@@ -6,7 +6,9 @@ This repository hosts the code for an engaging space exploration project. The pr
 ## Team Members:
 
 Carlos Tadeu Castilho Santos
+
 Sofia de Almeida Machado da Silveira
+
 Vinícius Silva Salinas
 
 ## Getting Started:
@@ -27,8 +29,13 @@ Marvel at the detailed spacecraft and celestial bodies as you navigate through s
 ## Technologies Used:
 
 HTML
+
 Three.js
+
 JavaScript
+
 OBJLoader
+
 MTLLoader
+
 DDSLoader
