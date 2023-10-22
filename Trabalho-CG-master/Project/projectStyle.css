@@ -1,0 +1,17 @@
+* {
+  color: white;
+  font-family: monospace;
+  font-style: italic;
+  text-align: center;
+}
+
+body {
+  background-size: cover;
+  background-color: black;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+}
+
+#container {
+	z-index:-1;
+}

@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>Welcome to Space</title>
+    
+    <link rel = "stylesheet" href = "./webglbook.css" />
+    <link rel="shortcut icon" type="image/png" href="./lego_space.png"/>
+    <script src="../libs/three.js"></script>
+    <script src="../libs/RequestAnimationFrame.js"></script>
+    <script src="../libs/OBJLoader.js"></script>
+    
+    <script type="x-shader/x-vertex" id="vsSpaceship">
+          uniform mat4 scale;
+          uniform mat4 translation;
+          void main() {
+              vec4 mvPosition = viewMatrix * scale * translation * vec4(position, 1.0);
+              gl_Position = projectionMatrix * mvPosition;
+          }
+	</script>
+        
+	<script type="x-shader/x-fragment" id="fsSpaceship">
+		void main(){
+			gl_FragColor = vec4(0.0, 52.0, 102.0, 1.0);
+		}
+	</script>
+    
+    <script>
+        var render = null,
+            scene = null,
+            camera = null,
+            cube = null,
+            obj_carregado = new THREE.Mesh(),
+            animating = false;
+        
+        function onLoad()
+        {
+            // Grabs our container div
+            var container = document.getElementById("container");
+            
+            // Creates the Three.js renderer, add it to our div
+            renderer = new THREE.WebGLRenderer({antialias: true});
+            renderer.setSize(container.offsetWidth, container.offsetHeight);
+            container.appendChild(renderer.domElement);
+            
+            // Creates a new Three.js scene
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color( 0x000000 );
+            
+            // Puts in a camera
+            camera = new THREE.PerspectiveCamera(45, container.offsetWidth / container.offsetHeight, 1, 4000);
+            camera.position.set(0, 0, 200);//MEXI AQUI TB!
+            
+            // Creates a directional light to show off the object
+            var light = new THREE.DirectionalLight(0xffffff, 1.5);
+            light.position.set(0, 0 ,1);
+            scene.add(light);
+            
+            var mapUrl; 
+            var map = THREE.ImageUtils.loadTexture(mapUrl);
+
+            
+            //Aplica escala e translacao no objeto
+            uniforms = {
+				scale: {value: new THREE.Matrix4().set(25, 0, 0, 0,
+                                                       0, 25, 0, 0,
+                                                       0, 0, 25, 0,
+                                                       0, 0, 0, 1)},
+                translation: {value: new THREE.Matrix4().set(1, 0, 0, 0,
+                                                             0, 1, 0, 0,
+                                                             0, 0, 1, -1,
+                                                             0, 0, 0, 1)}
+            };
+            
+            var materialSpaceship = new THREE.ShaderMaterial( {
+                uniforms: uniforms,
+				vertexShader: document.getElementById('vsSpaceship').textContent,
+				fragmentShader: document.getElementById('fsSpaceship').textContent,
+	        });
+            
+            var loader = new THREE.OBJLoader();
+			loader.load('Spaceship.obj', function(object){//Carregando o objeto
+			
+				object.traverse(function (child) {
+					if ( child instanceof THREE.Mesh) {
+						child.material = materialSpaceship;//aplica o material em cada vertice do objeto
+					}
+				} );
+				
+                obj_carregado = object;
+                scene.add( object );
+			});
+            
+            
+            // Turns it toward the scene to visualize the spaceship shape
+            obj_carregado.rotation.x = Math.PI / 5;
+            obj_carregado.rotation.y = Math.PI / 5;
+            
+            
+            // Runs our render loop
+            run();
+        }
+        
+        function run()
+        {
+            // Renders the scene
+            renderer.render(scene, camera);
+            
+            // Asks for another frame
+            requestAnimationFrame(run);
+        }
+        
+        
+    </script>
+
+</head>
+    
+<body onLoad="onLoad();" style="">
+    <center><h1>Welcome to Space!</h1></center>
+    <div id="container"
+         style="width:99%; height:80%; position:absolute;">
+    </div>
+    <div id="prompt"
+        style="width:95%; height:6%; bottom:0; position:absolute;">
+        Look at this awesome Spaceship!
+    </div>
+</body>
+    
+</html>

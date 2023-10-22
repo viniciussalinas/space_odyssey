@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>Welcome to Space</title>
+    
+    <link rel = "stylesheet" href = "./projectStyle.css"/>
+    <link rel="shortcut icon" type="image/png" href="./SpaceshipIcon.png"/>
+    <script src="../libs/three.js"></script>
+    <script src="../libs/RequestAnimationFrame.js"></script>
+    <script src="../libs/OBJLoader.js"></script>
+    
+    <script type="x-shader/x-vertex" id="vsSpaceman">
+        varying mat4 mTransformation;
+        
+        void main() {
+            
+            float translationX = -40.0;
+            float translationY = -10.0;
+            float translationZ = 0.0;
+            float scaleX = 12.6;
+            float scaleY = 12.6;
+            float scaleZ = 12.6;
+            float rotationX = 0.0;
+            float rotationY = 0.0;
+            float rotationZ = -0.5;
+            
+            // Translação
+            
+            mat4 tPos = mat4(   vec4(1.0, 0.0, 0.0, 0.0),
+                            vec4(0.0, 1.0, 0.0, 0.0),
+                            vec4(0.0, 0.0, 1.0, 0.0),
+                            vec4(translationX, translationY, translationZ, 1.0));
+            //Rotação
+                //Eixo X
+                mat4 rXPos = mat4(  vec4(1.0, 0.0, 0.0, 0.0),
+                                    vec4(0.0, cos(rotationX), sin(rotationX), 0.0),
+                                    vec4(0.0, -sin(rotationX), cos(rotationX) ,0.0),
+                                    vec4(0.0, 0.0, 0.0, 1.0));
+                //Eixo Y
+                mat4 rYPos = mat4(  vec4(cos(rotationY), 0.0, -sin(rotationY), 0.0),
+                                    vec4(0.0, 1.0, 0.0, 0.0),
+                                    vec4(sin(rotationY), 0.0, cos(rotationY), 0.0),
+                                    vec4(0.0, 0.0, 0.0, 1.0));
+                //Eixo Z
+                mat4 rZPos = mat4(  vec4(cos(rotationZ), sin(rotationZ), 0.0, 0.0),
+                                    vec4(-sin(rotationZ), cos(rotationZ), 0.0, 0.0),
+                                    vec4(0.0, 0.0, 1.0, 0.0),
+                                    vec4(0.0, 0.0, 0.0, 1.0));
+                //Escala
+                mat4 sPos = mat4(   vec4(scaleX, 0.0, 0.0, 0.0),
+                                    vec4(0.0, scaleY, 0.0, 0.0),
+                                    vec4(0.0, 0.0, scaleZ, 0.0),
+                                    vec4(0.0, 0.0, 0.0, 1.0));
+                
+                
+            mTransformation =  tPos * rXPos * rZPos * rYPos * sPos;
+            gl_Position = projectionMatrix * modelViewMatrix * mTransformation * vec4( position, 1.0 );
+        }
+	</script>
+    
+    <script type="x-shader/x-fragment" id="fsSpaceman">
+		void main(){
+			gl_FragColor = vec4(0.2, 0.8, 0.4, 1.0);
+		}
+	</script>
+
+    <script type="x-shader/x-vertex" id="vsMoon">
+        varying mat4 mTransformation;
+        
+        void main() {
+            
+            float translationX = 70.0;
+            float translationY = 10.0;
+            float translationZ = 0.0;
+            float scaleX = 0.2;
+            float scaleY = 0.2;
+            float scaleZ = 0.2;
+            float rotationX = 0.0;
+            float rotationY = 0.0;
+            float rotationZ = -0.5;
+            
+            // Translação
+            
+            mat4 tPos = mat4(   vec4(1.0, 0.0, 0.0, 0.0),
+                            vec4(0.0, 1.0, 0.0, 0.0),
+                            vec4(0.0, 0.0, 1.0, 0.0),
+                            vec4(translationX, translationY, translationZ, 1.0));
+            //Rotação
+                //Eixo X
+                mat4 rXPos = mat4(  vec4(1.0, 0.0, 0.0, 0.0),
+                                    vec4(0.0, cos(rotationX), sin(rotationX), 0.0),
+                                    vec4(0.0, -sin(rotationX), cos(rotationX) ,0.0),
+                                    vec4(0.0, 0.0, 0.0, 1.0));
+                //Eixo Y
+                mat4 rYPos = mat4(  vec4(cos(rotationY), 0.0, -sin(rotationY), 0.0),
+                                    vec4(0.0, 1.0, 0.0, 0.0),
+                                    vec4(sin(rotationY), 0.0, cos(rotationY), 0.0),
+                                    vec4(0.0, 0.0, 0.0, 1.0));
+                //Eixo Z
+                mat4 rZPos = mat4(  vec4(cos(rotationZ), sin(rotationZ), 0.0, 0.0),
+                                    vec4(-sin(rotationZ), cos(rotationZ), 0.0, 0.0),
+                                    vec4(0.0, 0.0, 1.0, 0.0),
+                                    vec4(0.0, 0.0, 0.0, 1.0));
+                //Escala
+                mat4 sPos = mat4(   vec4(scaleX, 0.0, 0.0, 0.0),
+                                    vec4(0.0, scaleY, 0.0, 0.0),
+                                    vec4(0.0, 0.0, scaleZ, 0.0),
+                                    vec4(0.0, 0.0, 0.0, 1.0));
+                
+                
+            mTransformation =  tPos * rXPos * rZPos * rYPos * sPos;
+            gl_Position = projectionMatrix * modelViewMatrix * mTransformation * vec4( position, 1.0 );
+        }
+	</script>
+        
+	<script type="x-shader/x-fragment" id="fsMoon">
+		void main(){
+			gl_FragColor = vec4(0.5, 0.5, 0.5, 1.0);
+		}
+	</script>
+    
+    <script>
+        var render      = null,
+            scene       = null,
+            camera      = null,
+            cube        = null,
+            cam_change  = false;
+        
+        function onLoad()
+        {
+            // Grabs our container div
+            var container = document.getElementById("container");
+            
+            // Creates the Three.js renderer, add it to our div
+            renderer = new THREE.WebGLRenderer({antialias: true});
+            renderer.setSize(container.offsetWidth, container.offsetHeight);
+            container.appendChild(renderer.domElement);
+            
+            // Creates a new Three.js scene
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color( 0x000000 );
+            
+            // Puts in a camera
+            camera = new THREE.PerspectiveCamera(45, container.offsetWidth / container.offsetHeight, 1, 4000);
+            camera.position.set(0, 0, 200);
+            
+            // Creates a directional light to show off the object
+            var light = new THREE.DirectionalLight(0xffffff, 1.5);
+            light.position.set(0, 0 ,1);
+            scene.add(light);
+            
+            var mapUrl; 
+            var map = THREE.ImageUtils.loadTexture(mapUrl);
+            
+            // Create our Earth with nice texture
+            var earthmap = "../images/earth_surface_2048.jpg";
+            var geometry = new THREE.SphereGeometry(30, 32, 32);
+            var texture = THREE.ImageUtils.loadTexture(earthmap);
+            var material = new THREE.MeshBasicMaterial( { map: texture } );
+            var earth = new THREE.Mesh( geometry, material ); 
+            
+            earth.position.x = -100;
+            earth.position.y = 20;
+            earth.position.z = -20;
+            scene.add(earth);
+            
+          
+            
+            var loader = new THREE.OBJLoader();
+			loader.load('../obj/Spaceship.obj', function(object){//Carregando o objeto
+			
+				
+                spaceship_obj = object;
+                scene.add( spaceship_obj );
+			});
+            
+            var materialSpaceman = new THREE.ShaderMaterial( { 
+				vertexShader: document.getElementById('vsSpaceman').textContent,
+				fragmentShader: document.getElementById('fsSpaceman').textContent,
+	        });
+            
+            // Instantiates a loader
+            var loader = new THREE.OBJLoader();
+            // Loads a resource
+            loader.load(
+                '../obj/Astronauta.obj',
+                // Called when resource is loaded
+                function ( object ) {
+                  
+                    object.traverse(function (child) {
+                        if(child instanceof THREE.Mesh) {
+                            child.material = materialSpaceman;
+                        }
+                    });
+                    spaceman_obj = object;
+                    scene.add( spaceman_obj );
+                });
+            
+                var materialMoon = new THREE.ShaderMaterial( { 
+               	vertexShader: document.getElementById('vsMoon').textContent,
+				fragmentShader: document.getElementById('fsMoon').textContent,
+	        });
+            
+            // Instantiates a loader
+            var loader = new THREE.OBJLoader();
+            // Loads a resource
+            loader.load(
+                '../obj/Moon.obj',
+                // Called when resource is loaded
+                function ( object ) {
+                  
+                    object.traverse(function (child) {
+                        if(child instanceof THREE.Mesh) {
+                            child.material = materialMoon;
+                        }
+                    });
+                    moon_obj = object;
+                    scene.add( moon_obj );
+                });
+            
+            
+            addMouseHandler();
+            // Runs our render loop
+            run();
+        }
+        
+        function run()
+        {
+            // Renders the scene
+            renderer.render(scene, camera);
+            if (cam_change)
+            {
+                camera.position.set(0, 0, -200);
+                camera.rotation.y = 180 * (Math.PI / 180);
+            } else {
+                camera.position.set(0, 0, 200);  
+                camera.rotation.y = 360 * (Math.PI / 180);
+            }
+            // Asks for another frame
+            requestAnimationFrame(run);
+        }
+        function addMouseHandler()
+        {
+            var dom = renderer.domElement;
+            dom.addEventListener('mouseup', onMouseUp, false)
+        }
+        
+        function onMouseUp ()
+        {
+            event.preventDefault();
+            cam_change = !cam_change;
+        }
+    </script>
+
+</head>
+    
+<body onLoad="onLoad();" style="">
+    <center><h1>Welcome to Space!</h1></center>
+    <div id="container"
+         style="width:99%; height:80%; position:absolute;">
+    </div>
+    <div id="prompt"
+        style="width:95%; height:6%; bottom:0; position:absolute;">
+        Look at these awesome Astronaut and Spaceship!<br>
+        Click to change the cam.
+    </div>
+</body>
+    
+</html>

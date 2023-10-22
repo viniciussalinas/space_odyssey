@@ -1,0 +1,21 @@
+* {
+    font-family: Arial;
+    font-style: italic;
+}
+
+body {
+	background-color:#eeeeee;
+	color:#212121;
+}
+
+#container {
+	background-image:url('../images/field_of_stars_full.jpg');
+	width:98%;
+	height:90%;
+	position:absolute;
+	background-color:#000000;
+}
+
+#container {
+	z-index:-1;
+}

@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>Welcome to Space</title>
+    
+    <link rel = "stylesheet" href = "./projectStyle.css"/>
+    <link rel="shortcut icon" type="image/png" href="./SpaceshipIcon.png"/>
+    <script src="http://cdnjs.cloudflare.com/ajax/libs/three.js/r61/three.min.js"></script>
+    <script src="../libs/three.js"></script>
+    <script src="../libs/RequestAnimationFrame.js"></script>
+    <script src="../libs/OBJLoader.js"></script>
+    <script src="../libs/MTLLoader.js"></script>
+    <script src="../libs/DDSLoader.js"></script>
+
+    <!-- Vertex shader para Moon  -->
+    <script type="x-shader/x-vertex" id="vsMoon">
+        varying mat4 mTransformation;
+        
+        varying vec3 vNormal;
+        varying vec3 vViewPosition;
+        uniform float timeDelta;
+        
+        void main() {
+            
+            float translationX = 70.0;
+            float translationY = 40.0;
+            float translationZ = 0.0;
+            float scaleX = 0.09;
+            float scaleY = 0.09;
+            float scaleZ = 0.09;
+            float rotationX = 0.0;
+            float rotationY = 0.0;
+            float rotationZ = -0.5;
+            
+            // Translação
+            
+            mat4 tPos = mat4(   vec4(1.0, 0.0, 0.0, 0.0),
+                            vec4(0.0, 1.0, 0.0, 0.0),
+                            vec4(0.0, 0.0, 1.0, 0.0),
+                            vec4(translationX, translationY, translationZ, 1.0));
+            //Rotação
+            
+                //Eixo X
+                mat4 rXPos = mat4(  vec4(1.0, 0.0, 0.0, 0.0),
+                                    vec4(0.0, cos(rotationX), sin(rotationX), 0.0),
+                                    vec4(0.0, -sin(rotationX), cos(rotationX) ,0.0),
+                                    vec4(0.0, 0.0, 0.0, 1.0));
+                //Eixo Y
+                mat4 rYPos = mat4(  vec4(cos(rotationY), 0.0, -sin(rotationY), 0.0),
+                                    vec4(0.0, 1.0, 0.0, 0.0),
+                                    vec4(sin(rotationY), 0.0, cos(rotationY), 0.0),
+                                    vec4(0.0, 0.0, 0.0, 1.0));
+                //Eixo Z
+                mat4 rZPos = mat4(  vec4(cos(rotationZ), sin(rotationZ), 0.0, 0.0),
+                                    vec4(-sin(rotationZ), cos(rotationZ), 0.0, 0.0),
+                                    vec4(0.0, 0.0, 1.0, 0.0),
+                                    vec4(0.0, 0.0, 0.0, 1.0));
+                //Escala
+                mat4 sPos = mat4(   vec4(scaleX, 0.0, 0.0, 0.0),
+                                    vec4(0.0, scaleY, 0.0, 0.0),
+                                    vec4(0.0, 0.0, scaleZ, 0.0),
+                                    vec4(0.0, 0.0, 0.0, 1.0));
+                
+            mTransformation =  tPos * rXPos * rZPos * rYPos * sPos;
+            
+            // Phong Material:
+            vec3 center = vec3(0.0, 0.0, 0.0);
+            vec3 p = position;
+            float distance = length(center - p);
+            p += sin(distance + timeDelta/1000.0)*0.5;
+            vec4 modelViewPosition = modelViewMatrix * vec4(p, 1.0);
+            vViewPosition = -modelViewPosition.xyz;
+            vNormal = normalMatrix * normal;
+            
+            gl_Position = projectionMatrix * modelViewMatrix * mTransformation * vec4( position, 1.0 );
+        }
+	</script>
+    
+    <script>
+        var curves = [];
+        var position = 0;
+        var render      = null,
+            scene       = null,
+            camera      = null,
+            cam_change  = false;
+        var craft = new THREE.Mesh;
+        var scifi_fighter = new THREE.Mesh;
+        var aircraft = new THREE.Mesh;
+        
+        function onLoad()
+        {
+            // Grabs our container div
+            var container = document.getElementById("container");
+            
+            // Creates the Three.js renderer, add it to our div
+            renderer = new THREE.WebGLRenderer({antialias: true});
+            renderer.setSize(container.offsetWidth, container.offsetHeight);
+            container.appendChild(renderer.domElement);
+            
+            // Creates a new Three.js scene
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color( 0x000000 );
+            
+            // Puts in a camera
+            camera = new THREE.PerspectiveCamera(45, container.offsetWidth / container.offsetHeight, 1, 4000);
+            camera.position.set(0, 0, 200);
+            
+            // Creates a directional light to show off the object
+            var light = new THREE.DirectionalLight(0xffffff, 1.5);
+            light.position.set(0, 0 ,1);
+            scene.add(light);
+            
+            var mapUrl; 
+            var map = THREE.ImageUtils.loadTexture(mapUrl);
+            
+            // Create our Earth with nice texture
+            var earthmap = "../images/earth_surface_2048.jpg";
+            var geometry = new THREE.SphereGeometry(30, 32, 32);
+            var texture = THREE.ImageUtils.loadTexture(earthmap);
+            var material = new THREE.MeshBasicMaterial( { map: texture } );
+            var earth = new THREE.Mesh( geometry, material ); 
+            
+            earth.position.set(0, 0, 0);
+            earth.scale.set(1.4, 1.4, 1.4);
+            scene.add(earth);
+          
+            var loader = new THREE.OBJLoader();
+			loader.load('../obj/Spaceship.obj', function(object){//Carregando o objeto
+			
+				
+                spaceship_obj = object;
+                spaceship_obj.position.set(50, -40, 10);
+                spaceship_obj.scale.set(4.2, 4.2, 4.2);
+                spaceship_obj.rotation.y = 3.2;
+                spaceship_obj.rotation.x = 0.4;
+                scene.add( spaceship_obj );
+			});
+            
+            THREE.Loader.Handlers.add( /\.dds$/i, new THREE.DDSLoader());
+            var mtlLoader = new THREE.MTLLoader();
+            mtlLoader.setPath( '../obj/craft/' );  
+            mtlLoader.load( 'craft.mtl', function( materials ) {
+                materials.preload();
+                var loader = new THREE.OBJLoader();
+                loader.setMaterials( materials );
+                loader.setPath( '../obj/craft/' );  
+                loader.load( 'craft.obj', function ( object ) {
+                    object.position.set(-100, -30, 0);
+                    object.scale.set(2.2, 2.2, 2.2);
+                    object.rotation.y = 2.5;
+                    object.rotation.x = 0.9;
+                    craft = object;
+                    scene.add( craft );
+
+                });
+            });
+            
+            THREE.Loader.Handlers.add( /\.dds$/i, new THREE.DDSLoader());
+            var mtlLoader = new THREE.MTLLoader();
+            mtlLoader.setPath( '../obj/SciFi-Fighter/' );  
+            mtlLoader.load( 'SciFi_Fighter_AK5.mtl', function( materials ) {
+                materials.preload();
+                var loader = new THREE.OBJLoader();
+                loader.setMaterials( materials );
+                loader.setPath( '../obj/SciFi-Fighter/' );  
+                loader.load( 'SciFi_Fighter_AK5.obj', function ( object ) {
+                    object.position.set(-55, -50, 0);
+                    object.scale.set(0.015, 0.015, 0.015);
+                    object.rotation.y = 1;
+                    object.rotation.x = 1;
+                    object.rotation.z = 1.5;                    
+                    scifi_fighter = object;
+                    scene.add( scifi_fighter );
+
+                });
+            });
+            
+            THREE.Loader.Handlers.add( /\.dds$/i, new THREE.DDSLoader());
+            var mtlLoader = new THREE.MTLLoader();
+            mtlLoader.setPath( '../obj/E-45-Aircraft/' );  
+            mtlLoader.load( 'E 45 Aircraft_obj.mtl', function( materials ) {
+                materials.preload();
+                var loader = new THREE.OBJLoader();
+                loader.setMaterials( materials );
+                loader.setPath( '../obj/E-45-Aircraft/' );  
+                loader.load( 'E 45 Aircraft_obj.obj', function ( object ) {
+                    object.position.set(160, 28, 0);
+                    object.scale.set(4.2, 4.2, 4.2);
+                    object.rotation.y = -2.4;
+                    object.rotation.x = 0.5;
+                    aircraft = object;
+                    scene.add( aircraft );
+
+                });
+            });
+            
+            THREE.Loader.Handlers.add( /\.dds$/i, new THREE.DDSLoader());
+            var mtlLoader = new THREE.MTLLoader();
+            mtlLoader.setPath( '../obj/Astronauta/' );  
+            mtlLoader.load( 'spaceman.mtl', function( materials ) {
+                materials.preload();
+                var loader = new THREE.OBJLoader();
+                loader.setMaterials( materials );
+                loader.setPath( '../obj/Astronauta/' );  
+                loader.load( 'spaceman.obj', function ( object ) {
+                    object.position.set(80, 40, 0);
+                    object.scale.set(7.2, 7.2, 7.2);
+                    object.rotation.y = -2.4;
+                    object.rotation.x = 0.5;
+                    spaceman = object;
+                    scene.add( spaceman );
+
+                });
+            });
+            
+            var uniforms = ({
+                timeDelta : {type: 'f', value: 0},
+                emissive : {type: 'c', value: new THREE.Color(0x282828)},
+                specular : {type: 'c', value: new THREE.Color(0xB0B0B0)}
+            });
+            var phongShader = THREE.ShaderLib.phong;
+            var mUniforms = THREE.UniformsUtils.merge([phongShader.uniforms, uniforms]);
+            
+            var materialMoon = new THREE.ShaderMaterial( { 
+                uniforms : mUniforms,
+                vertexShader: document.getElementById('vsMoon').textContent,
+                fragmentShader: phongShader.fragmentShader,
+                lights: true,
+                side : THREE.DoubleSide
+	        });
+
+            // Instantiates a loader
+            var loader = new THREE.OBJLoader();
+            // Loads a resource
+            loader.load(
+                '../obj/Moon.obj',
+                // Called when resource is loaded
+                function ( object ) {
+                  
+                    object.traverse(function (child) {
+                        if(child instanceof THREE.Mesh) {
+                            child.material = materialMoon;
+                        }
+                    });
+                    moon_obj = object;
+                    scene.add( moon_obj );
+                });
+
+            testPointx = -150;
+            testPointy = -50;
+            testPointz = 0;
+            control1x = -100;
+            control1y = 50;
+            control1z = 0;
+            control2x = -100;
+            control2y = 15;
+            control2z = 0;
+            curve = new THREE.CubicBezierCurve3(
+                new THREE.Vector3( testPointx, testPointy, testPointz ),
+                new THREE.Vector3( control1x, control1y, control1z),
+                new THREE.Vector3( control2x, control2y, control2z ),
+                new THREE.Vector3( -100, 0, 0 )
+            );
+            
+            path = new THREE.Path();
+            path.add(curve);
+            
+            // Start angle and point
+            previousAngle = getAngle( position );
+            previousPoint = path.getPointAt( position );
+            addCurve();
+            
+            move();
+            addMouseHandler();
+            // Runs our render loop
+            run();
+        }
+
+        function move() {
+        	
+          position += 0.001;
+          var point = path.getPointAt(position);
+
+          craft.position.x = point.x;
+          craft.position.y = point.y;
+
+          var angle = getAngle(position);
+
+          previousPoint = point;
+          previousAngle = angle;
+
+        }
+        
+        function getAngle( position ){
+
+		    var tangent = path.getTangent(position).normalize();
+		    angle = - Math.atan( tangent.x / tangent.y);
+		    return angle;
+        }
+        
+        function addCurve() {
+            
+            curveGeometry = new THREE.Geometry();
+            curveGeometry.vertices = curve.getPoints( 50 );
+            curveMaterial = new THREE.LineBasicMaterial( { color : 0x00ffff } );
+            curveLine = new THREE.Line( curveGeometry, curveMaterial );
+            scene.add(curveLine);
+
+            curves.push(curveLine);
+            curveLine.curve = curve;
+        }
+        
+        function updateCurve() {
+
+            testPointx = testPointx + 0.1;
+            testPointy = testPointy + 0.1;
+        
+            control1x = control1x + 0.1;
+            control1y = control1y + 0.1;
+            control1z = control1z + 0.1;
+        
+            control2x = control2x + 0.1;
+            control2y = control2y + 0.1;
+            control2z = control2z + 0.1;
+            
+            curveLine.curve.v0.x = testPointx;
+            curveLine.curve.v0.y = testPointy;
+            curveLine.curve.v0.z = testPointz;
+            curveLine.curve.v1.x = control1x;
+            curveLine.curve.v1.y = control1y;
+            curveLine.curve.v1.z = control1z;
+            curveLine.curve.v2.x = control2x;
+            curveLine.curve.v2.y = control2y;
+            curveLine.curve.v2.z = control2z;
+
+            curveLine.geometry.vertices = curveLine.curve.getPoints( 50 );
+            craft.position.x = curveLine.geometry.vertices[0].x;
+            craft.position.y = curveLine.geometry.vertices[0].y;
+            craft.position.z = curveLine.geometry.vertices[0].z;
+            curveLine.geometry.verticesNeedUpdate = true;
+
+        }
+        function run()
+        {
+            updateCurve();
+            // Renders the scene
+            renderer.render(scene, camera);
+            
+            if (cam_change)
+            {
+                camera.position.set(0, 200, 0);
+                camera.rotation.x = 270 * (Math.PI / 180);
+            } else {
+                camera.position.set(0, 0, 200);  
+                camera.rotation.x = 360 * (Math.PI / 180);
+            }
+            // Asks for another frame
+            requestAnimationFrame(run);
+        }
+        
+        function addMouseHandler()
+        {
+            var dom = renderer.domElement;
+            dom.addEventListener('mouseup', onMouseUp, false);
+        }
+        
+        function onMouseUp ()
+        {
+            event.preventDefault();
+            cam_change = !cam_change;
+        }
+    </script>
+
+</head>
+    
+<body onLoad="onLoad();" style="">
+    <center><h1>Welcome to Space!</h1></center>
+    <div id="container"
+         style="width:99%; height:80%; position:absolute;">
+    </div>
+    <div id="prompt"
+        style="width:95%; height:6%; bottom:0; position:absolute;">
+        Look at these awesome Astronaut and Spaceship!<br>
+        Click to change the cam.
+    </div>
+</body>
+    
+</html>
